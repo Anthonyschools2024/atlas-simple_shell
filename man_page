@@ -1,0 +1,24 @@
+.TH simple-shell 1 "July 2024" "1.0" "supports user commands"
+.SH name
+simple-shell \- simple shell program
+
+.SH discription
+In this project we will be building a simple command-line interface so that users can interact with their operating system.
+
+.SH options
+.TP
+.B $ /bin/ls -l
+list files in long format
+
+.SH EXAMPLES
+.TP
+.B $ /bin/ls
+lists files.
+.TP
+.B $ /bin/echo "atlas!"
+Echoes "Atlas!" to the terminal
+.TP
+.B $ EXIT
+
+.SH AUTHORS
+ANTHONY KIMBLE

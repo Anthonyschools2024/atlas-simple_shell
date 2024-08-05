@@ -1,12 +1,20 @@
-#infdef SHELL_H
-#define SHELL_H
+#ifndef MAIN_H
+#define MAIN_H
 
-#include &lt;stdlib.h&gt;
-#include &lt;stdio.h&gt;
-#include &lt;string.h&gt;
-#include &lt;unisted.h&gt;
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <string.h>
+#include <sys/wait.h>
+#include <sys/types.h>
 
-int main (void);
-void tokenize_input(cahr *input, char **args);
-void get_command(char **input);
-int is_background(char *args);
+#define BUFSIZE 1024
+#define MAX_ARGS 32
+
+void tokenize_input(char *buffer, char *args[]);
+int execute_command(char *args[], int num_args);
+int main(int argc, char **argv, char **env);
+void sigint_handler(int signum);
+void sigtstp_handler(int signum);
+
+#endif

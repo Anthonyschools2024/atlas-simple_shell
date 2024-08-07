@@ -69,6 +69,86 @@ int execute_command(char *args[], int num_args)
 }
 
    
+/**
+ * sigint_handler - Handles the SIGINT signal (Ctrl+C)
+ *
+ * @signum: Signal Number
+ */
 
+void sigint_handler(int signum)
+{
+	(void)signum;
+	printf("\nCaught SIGINT (Crtl+C)\n");
+}
+
+
+/**
+ * sigtstp_handler - Handles the SIGTSTP signal (Ctrl+Z)
+ *
+ * @signum: Signal Number
+ */
+
+void sigtstp_handler(int signum)
+{
+	(void)signum;
+	printf("\nCaught SIGSTP (Ctrl+Z)\n");
+}
   
-	        
+
+/**
+ * main - Entry point for Simple Shell program
+ *
+ * @argc: Number of command line arguments
+ * @argv: Array of command line arguments
+ * @env: Array of environment variables
+ *
+ * Return: EXIT_SUCESS
+ */
+
+int main(int argc, char **argv, char **env)
+{
+	char buffer[BUFFER_SIZE];
+	char *args[MAX_ARGS];
+	pid_t child_pid;
+	int status;
+
+	(void)argc;
+	(void)argv;
+
+	signal(SIGINT, sigint_handler);
+	signal(SIGTSTP, sigtstp_handler);
+
+	while (1)
+	{
+		printf("$ ");
+		fflush(stdout);
+
+		if (fgets(buffer, BUFFER_SIZE, stdin) == NULL)
+		{
+			printf("\n");
+			break;
+		}
+
+		buffer[strcspn(buffer, "\n")] = '\0';
+
+		tokenize_input(buffer, args);
+
+		child_pid = fork();
+		if (child_pid == -1)
+		{
+			perror("fork");
+			exit(EXIT_FAILURE);
+		}
+		if (child_pid == 0)
+		{
+			execve(args[0], args, env);
+			fprintf(stderr, "Failed to execute %s: %s\n", args[0], strerror(errno));
+			exit(EXIT_FAILURE);
+		}
+		else
+		{
+			waitpid(child_pid, &status, 0);
+		}
+	}
+	return (EXIT_SUCCESS);
+}	        

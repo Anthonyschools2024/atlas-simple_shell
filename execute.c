@@ -1,46 +1,41 @@
 #include "shell.h"
 
 /**
- * execute - executes user command
- * @tokens: array of input tokens
+ * execute - Executes a command
+ * @args: The arguments for the command
  *
- * Return: 0 on success, -1 on failure
+ * Return: 1 if the shell should continue running, 0 if it should terminate
  */
 
-int execute(char **tokens)
+int execute(char **args)
 {
-	pid_t child_pid; /* process id for child */
-	int status; /* termination status of child process */
-	char *executable = NULL; /* pointer to path of executable */
+	pid_t pid;	/* Process ID variable */
+	int status; /* Status integer */
 
-	if (tokens[0] == NULL) /* if no command */
-		return (-1); /* indicate failure */
-	if (strchr(tokens[0], '/') != NULL) /* if command specifies path */
-		executable = strdup(tokens[0]); /* duplicate command */
-	else
-		executable = find_executable(tokens[0]); /* find command in PATH */
-	if (executable == NULL) /* if not found */
-		return (127); /* indicate command not found */
-	child_pid = fork(); /* create child process */
-	if (child_pid == -1) /* if fork fails */
+	if (args[0] == NULL) /* Args null check */
+		return (1);
+
+	pid = fork(); /* PID becomes forked ID, start new process */
+
+	if (pid == 0) /* Child process execution */
 	{
-		free(executable); /* free executable */
-		return (-1); /* indicate failure */
-	}
-	if (child_pid == 0) /* if fork succeeds */
-	{
-		if (execve(executable, tokens, environ) == -1) /* replace child w command */
+		if (execvp(args[0], args) == -1)
 		{
-			free(executable); /* if execve fails, free executable */
-			exit(126); /* exit and indicate execution failure */
+			perror("execvp");
 		}
+		exit(EXIT_FAILURE);
 	}
-	else /* for parent process */
+	else if (pid < 0) /* Error handling */
 	{
-		do {
-			waitpid(child_pid, &status, WUNTRACED); /* wait for child */
-		} while (!WIFEXITED(status) && !WIFSIGNALED(status)); /* until exited */
+		perror("fork");
 	}
-	free(executable); /* free executable */
-	return (WIFEXITED(status) ? WEXITSTATUS(status) : -1); /* get exit status or -1 */
+	else /* If it gets here, code is running in Parent */
+	{
+		do
+		{
+			waitpid(pid, &status, WUNTRACED); /* Wait for child with PID to finish */
+		} while (!WIFEXITED(status) && !WIFSIGNALED(status)); /* Loop ends if child ends or was terminated */
+	}
+
+	return (1); /* Return success */
 }
